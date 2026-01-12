@@ -1,4 +1,5 @@
 ARG BASE_IMAGE
+# Terraform version pinned - requires testing before upgrades due to breaking changes
 ARG TERRAFORM_VERSION=1.14.3
 
 FROM mcr.microsoft.com/azure-cli:2.50.0 AS azcli

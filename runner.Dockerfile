@@ -1,4 +1,5 @@
 ARG BASE_IMAGE
+# OpenTofu follows semantic versioning - safe to upgrade patch versions
 ARG TOFU_VERSION=1.11.2
 
 FROM ghcr.io/opentofu/opentofu:${TOFU_VERSION}-minimal AS tofu

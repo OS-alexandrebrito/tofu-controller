@@ -1,4 +1,5 @@
 ARG BASE_IMAGE
+# Terraform version pinned - requires testing before upgrades due to breaking changes
 ARG TERRAFORM_VERSION=1.14.3
 
 FROM hashicorp/terraform:${TERRAFORM_VERSION} AS terraform

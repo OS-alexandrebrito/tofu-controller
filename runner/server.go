@@ -77,18 +77,24 @@ type TerraformRunnerServer struct {
 
 const loggerName = "runner.terraform"
 
-// detectBinaryPath detects which Terraform/OpenTofu binary is available
-func detectBinaryPath() string {
-	// Check for tofu first (default)
-	if _, err := os.Stat("/usr/local/bin/tofu"); err == nil {
-		return "/usr/local/bin/tofu"
+// detectBinaryPath detects which Terraform/OpenTofu binary is available.
+// It searches for executables in PATH and prefers OpenTofu (tofu) over Terraform.
+// Logs the detected binary for observability.
+func detectBinaryPath(log logr.Logger) (string, error) {
+	// Check for OpenTofu first (preferred)
+	if path, err := exec.LookPath("tofu"); err == nil {
+		log.Info("detected OpenTofu binary", "path", path)
+		return path, nil
 	}
-	// Fall back to terraform
-	if _, err := os.Stat("/usr/local/bin/terraform"); err == nil {
-		return "/usr/local/bin/terraform"
+
+	// Fall back to Terraform
+	if path, err := exec.LookPath("terraform"); err == nil {
+		log.Info("detected Terraform binary", "path", path)
+		return path, nil
 	}
-	// Default to terraform for backward compatibility
-	return "terraform"
+
+	// Neither binary found - this should not happen in properly built images
+	return "", fmt.Errorf("neither 'tofu' nor 'terraform' binary found in PATH")
 }
 
 func (r *TerraformRunnerServer) ValidateInstanceID(requestedInstanceID string) error {
@@ -238,8 +244,13 @@ func (r *TerraformRunnerServer) NewTerraform(ctx context.Context, req *NewTerraf
 	log := ctrl.LoggerFrom(ctx, "instance-id", r.InstanceID).WithName(loggerName)
 
 	// Detect which binary is available (tofu or terraform)
-	binaryPath := detectBinaryPath()
-	log.Info("creating new terraform", "workingDir", req.WorkingDir, "detectedBinaryPath", binaryPath)
+	binaryPath, err := detectBinaryPath(log)
+	if err != nil {
+		log.Error(err, "binary detection failed")
+		return nil, fmt.Errorf("failed to detect terraform/opentofu binary: %w", err)
+	}
+
+	log.Info("creating new terraform", "workingDir", req.WorkingDir, "binaryPath", binaryPath)
 	tf, err := tfexec.NewTerraform(req.WorkingDir, binaryPath)
 	if err != nil {
 		log.Error(err, "unable to create new terraform", "workingDir", req.WorkingDir, "binaryPath", binaryPath)
