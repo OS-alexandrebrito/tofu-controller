@@ -60,8 +60,6 @@ spec:
 - OpenTofu: 1.11.2
 - Terraform: 1.14.3
 
-**Note**: Terraform support is provided for backward compatibility and will be deprecated in a future release.
-
 ## Configuration
 
 The following table lists the configurable parameters of the tofu-controller chart and their default values.
