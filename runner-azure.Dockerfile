@@ -1,5 +1,6 @@
 ARG BASE_IMAGE
-ARG TOFU_VERSION=1.11.1
+# OpenTofu follows semantic versioning - safe to upgrade patch versions
+ARG TOFU_VERSION=1.11.2
 
 FROM mcr.microsoft.com/azure-cli:2.50.0 AS azcli
 FROM ghcr.io/opentofu/opentofu:${TOFU_VERSION}-minimal AS tofu
